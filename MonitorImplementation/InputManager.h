@@ -1,5 +1,6 @@
 #ifndef INPUTMANAGER
 #define INPUTMANAGER
+
 #include <list>
 #include "SFML\Graphics.hpp"
 class InputManager

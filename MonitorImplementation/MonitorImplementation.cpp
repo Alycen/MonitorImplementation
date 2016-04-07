@@ -8,7 +8,8 @@
 
 using namespace std;
 
-struct BoundedBuffer {
+struct BoundedBuffer 
+{
 	string* buffer;
 	int capacity;
 
@@ -21,15 +22,18 @@ struct BoundedBuffer {
 	std::condition_variable not_full;
 	std::condition_variable not_empty;
 
-	BoundedBuffer(int capacity) : capacity(capacity), front(0), rear(0), count(0) {
+	BoundedBuffer(int capacity) : capacity(capacity), front(0), rear(0), count(0) 
+	{
 		buffer = new string[capacity];
 	}
 
-	~BoundedBuffer() {
+	~BoundedBuffer() 
+	{
 		delete[] buffer;
 	}
 
-	void deposit(string data) {
+	void deposit(string data) 
+	{
 		std::unique_lock<std::mutex> l(lock);
 
 		not_full.wait(l, [this]() {return count != capacity; });
@@ -41,7 +45,8 @@ struct BoundedBuffer {
 		not_empty.notify_one();
 	}
 
-	string fetch() {
+	string fetch() 
+	{
 		std::unique_lock<std::mutex> l(lock);
 
 		not_empty.wait(l, [this]() {return count != 0; });
@@ -56,30 +61,26 @@ struct BoundedBuffer {
 	}
 };
 
-void consumer(int id, BoundedBuffer& buffer) {
-	for (int i = 0; i < 50; ++i) {
+void consumer(int id, BoundedBuffer& buffer) 
+{
+	while (true) 
+	{
 		string value = buffer.fetch();
-		//cout << "Consumer " << id << " fetched " <<  value << endl;
-		std::this_thread::sleep_for(std::chrono::milliseconds(250));
+		cout << value << endl;
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
 }
+
 
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(1400, 900, 32), "This Subject makes me want to quit college");
+	window.setFramerateLimit(60);
+	window.setVerticalSyncEnabled(true);
 
 	Player* player = new Player();
 
 	BoundedBuffer buffer(200);
-
-	std::thread c1(consumer, 0, std::ref(buffer));
-	std::thread c2(consumer, 1, std::ref(buffer));
-	std::thread c3(consumer, 2, std::ref(buffer));
-
-	c1.join();
-	c2.join();
-	c3.join();
-
 	while (window.isOpen())
 	{
 		sf::Event Event;
@@ -91,14 +92,40 @@ int main()
 
 			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Escape))
 				window.close();
+
+			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::A))
+			{
+				buffer.deposit("A Key Pressed");
+			}
+			else if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::S))
+			{
+				buffer.deposit("S Key Pressed");
+			}
+			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::W))
+			{
+				buffer.deposit("W Key Pressed");
+			}
+			else if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::D))
+			{
+				buffer.deposit("D Key Pressed");
+			}
 		}
 		player->Update();
+		InputManager::GetInstance()->UpdateState();
 
 		window.clear();
 		player->Draw(window);
 		window.display();
 	}
 
-	return 0;
+	std::thread c1(consumer, 0, std::ref(buffer));
+	std::thread c2(consumer, 1, std::ref(buffer));
+	std::thread c3(consumer, 2, std::ref(buffer));
+
+	c1.join();
+	c2.join();
+	c3.join();
+
+	return EXIT_SUCCESS;
 }
 

@@ -12,7 +12,6 @@ private:
 
 	sf::Vector2f position;
 	sf::Vector2f direction;
-	float radius;
 public:
 	Player::Player()
 	{
@@ -20,6 +19,7 @@ public:
 
 		texture.loadFromFile("player.png");
 		sprite.setTexture(texture);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	}
 	void Player::Update()
 	{
@@ -58,6 +58,7 @@ public:
 		{
 			direction.y--;
 		}
+
 		float length = sqrt((direction.x * direction.x) + (direction.y * direction.y));
 
 		if (length > 0)
@@ -67,10 +68,9 @@ public:
 			sprite.setRotation(atan2(normalised.y, normalised.x) * 180 / (22.0f / 7.0f) + 90.0f);
 
 			sprite.setPosition(position);
-			
 		}
-
 	}
+
 	void Player::Draw(sf::RenderWindow &win)
 	{
 		win.draw(sprite);
