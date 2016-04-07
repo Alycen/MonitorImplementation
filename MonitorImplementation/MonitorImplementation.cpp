@@ -67,10 +67,9 @@ void consumer(int id, BoundedBuffer& buffer)
 	{
 		string value = buffer.fetch();
 		cout << value << endl;
-		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 }
-
 
 int main()
 {
@@ -81,6 +80,11 @@ int main()
 	Player* player = new Player();
 
 	BoundedBuffer buffer(200);
+
+	std::thread c1(consumer, 0, std::ref(buffer));
+	std::thread c2(consumer, 1, std::ref(buffer));
+	std::thread c3(consumer, 2, std::ref(buffer));
+
 	while (window.isOpen())
 	{
 		sf::Event Event;
@@ -117,14 +121,6 @@ int main()
 		player->Draw(window);
 		window.display();
 	}
-
-	std::thread c1(consumer, 0, std::ref(buffer));
-	std::thread c2(consumer, 1, std::ref(buffer));
-	std::thread c3(consumer, 2, std::ref(buffer));
-
-	c1.join();
-	c2.join();
-	c3.join();
 
 	return EXIT_SUCCESS;
 }
